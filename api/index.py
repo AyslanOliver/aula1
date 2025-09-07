@@ -142,5 +142,8 @@ def tables():
     return render_template('tables.html', stats=stats)
 
 # Handler para Vercel
+# Export the app for Vercel
+app = app
+
 if __name__ == '__main__':
     app.run(debug=True)
