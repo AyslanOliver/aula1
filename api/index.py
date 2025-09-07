@@ -1,19 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
-import sys
-
-# Adicionar o diretório pai ao path para importar módulos
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from database import init_db, get_db_connection
+from database import init_db, create_user, authenticate_user, get_dashboard_stats, get_chart_data
 
 app = Flask(__name__, 
            template_folder='../templates',
            static_folder='../static')
-app.secret_key = 'your-secret-key-here'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-# Inicializar banco de dados
+# Initialize database
 init_db()
 
 @app.route('/')
@@ -23,17 +17,38 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Lógica de login aqui
-        flash('Login realizado com sucesso!', 'success')
-        return redirect(url_for('index'))
+        email = request.form['email']
+        password = request.form['password']
+        
+        result = authenticate_user(email, password)
+        
+        if result['success']:
+            session['user_id'] = result['user']['id']
+            session['user_email'] = result['user']['email']
+            return redirect(url_for('index'))
+        else:
+            flash('Email ou senha inválidos!')
+    
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Lógica de registro aqui
-        flash('Registro realizado com sucesso!', 'success')
-        return redirect(url_for('login'))
+        email = request.form['email']
+        password = request.form['password']
+        name = request.form.get('name', '')
+        birth_date = request.form.get('birth_date')
+        license_plate = request.form.get('license_plate')
+        car_model = request.form.get('car_model')
+        
+        result = create_user(email, password, name, birth_date, license_plate, car_model)
+        
+        if result['success']:
+            flash('Usuário criado com sucesso!')
+            return redirect(url_for('login'))
+        else:
+            flash(result['message'])
+    
     return render_template('register.html')
 
 @app.route('/forgot-password')

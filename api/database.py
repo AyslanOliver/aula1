@@ -1,95 +1,69 @@
-import sqlite3
+import pymongo
 import os
 from datetime import datetime
 import hashlib
+from bson.objectid import ObjectId
 
-# Caminho para o banco de dados
-DB_PATH = '/tmp/database.db' if os.environ.get('VERCEL') else 'database.db'
+# MongoDB connection
+MONGO_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
+DB_NAME = 'aula1_db'
 
 def init_db():
-    """Inicializa o banco de dados SQLite"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            name TEXT,
-            birth_date TEXT,
-            license_plate TEXT,
-            car_model TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS routes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            origem TEXT NOT NULL,
-            destino TEXT NOT NULL,
-            distancia REAL,
-            tempo_estimado TEXT,
-            route_date TEXT,
-            route_name TEXT,
-            vehicle_type TEXT,
-            destination_city TEXT,
-            total_packages INTEGER,
-            loose_packages INTEGER,
-            has_helper BOOLEAN,
-            is_sunday_holiday BOOLEAN,
-            total_value REAL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS despesas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            descricao TEXT NOT NULL,
-            valor REAL NOT NULL,
-            categoria TEXT NOT NULL,
-            data TEXT NOT NULL,
-            payment_method TEXT,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+    """Inicializa o banco de dados MongoDB"""
+    try:
+        client = pymongo.MongoClient(MONGO_URI)
+        db = client[DB_NAME]
+        
+        # Create indexes for better performance
+        db.users.create_index("email", unique=True)
+        db.routes.create_index("user_id")
+        db.despesas.create_index("user_id")
+        
+        client.close()
+        return True
+    except Exception as e:
+        print(f"MongoDB initialization error: {e}")
+        return False
 
 def get_db_connection():
-    """Retorna uma conexão com o banco de dados"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """Retorna uma conexão com o banco de dados MongoDB"""
+    try:
+        client = pymongo.MongoClient(MONGO_URI)
+        db = client[DB_NAME]
+        return client, db
+    except Exception as e:
+        print(f"MongoDB connection error: {e}")
+        return None, None
 
 def create_user(email, password, name="", birth_date=None, license_plate=None, car_model=None):
     """Cria um novo usuário"""
     try:
-        conn = get_db_connection()
+        client, db = get_db_connection()
+        if not db:
+            return {"success": False, "message": "Erro de conexão com o banco"}
         
         # Verifica se o usuário já existe
-        existing_user = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+        existing_user = db.users.find_one({"email": email})
         if existing_user:
-            conn.close()
+            client.close()
             return {"success": False, "message": "Usuário já existe"}
         
         # Hash da senha
         password_hash = hashlib.sha256(password.encode()).hexdigest()
         
-        conn.execute('''
-            INSERT INTO users (email, password, name, birth_date, license_plate, car_model)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (email, password_hash, name, birth_date, license_plate, car_model))
+        user_doc = {
+            "email": email,
+            "password": password_hash,
+            "name": name,
+            "birth_date": birth_date,
+            "license_plate": license_plate,
+            "car_model": car_model,
+            "created_at": datetime.now()
+        }
         
-        conn.commit()
-        user_id = conn.lastrowid
-        conn.close()
+        result = db.users.insert_one(user_doc)
+        user_id = str(result.inserted_id)
+        client.close()
         
         return {"success": True, "user_id": user_id}
     except Exception as e:
@@ -98,23 +72,26 @@ def create_user(email, password, name="", birth_date=None, license_plate=None, c
 def authenticate_user(email, password):
     """Autentica um usuário"""
     try:
-        conn = get_db_connection()
+        client, db = get_db_connection()
+        if not db:
+            return {"success": False, "message": "Erro de conexão com o banco"}
+        
         password_hash = hashlib.sha256(password.encode()).hexdigest()
         
-        user = conn.execute('''
-            SELECT id, email, name FROM users 
-            WHERE email = ? AND password = ?
-        ''', (email, password_hash)).fetchone()
+        user = db.users.find_one({
+            "email": email,
+            "password": password_hash
+        })
         
-        conn.close()
+        client.close()
         
         if user:
             return {
                 "success": True,
                 "user": {
-                    "id": user['id'],
+                    "id": str(user['_id']),
                     "email": user['email'],
-                    "name": user['name']
+                    "name": user.get('name', '')
                 }
             }
         else:
@@ -125,19 +102,35 @@ def authenticate_user(email, password):
 def get_dashboard_stats(user_id=None):
     """Retorna estatísticas para o dashboard"""
     try:
-        conn = get_db_connection()
+        client, db = get_db_connection()
+        if not db:
+            return {
+                "total_routes": 0,
+                "total_expenses": 0,
+                "total_value": 0,
+                "active_users": 0
+            }
         
         # Total de rotas
         if user_id:
-            total_routes = conn.execute('SELECT COUNT(*) FROM routes WHERE user_id = ?', (user_id,)).fetchone()[0]
-            total_expenses = conn.execute('SELECT COUNT(*) FROM despesas WHERE user_id = ?', (user_id,)).fetchone()[0]
-            total_value = conn.execute('SELECT SUM(valor) FROM despesas WHERE user_id = ?', (user_id,)).fetchone()[0] or 0
+            filter_query = {"user_id": user_id}
+            total_routes = db.routes.count_documents(filter_query)
+            total_expenses = db.despesas.count_documents(filter_query)
+            
+            # Total value using aggregation
+            pipeline = [{"$match": filter_query}, {"$group": {"_id": None, "total": {"$sum": "$valor"}}}]
+            result = list(db.despesas.aggregate(pipeline))
+            total_value = result[0]["total"] if result else 0
         else:
-            total_routes = conn.execute('SELECT COUNT(*) FROM routes').fetchone()[0]
-            total_expenses = conn.execute('SELECT COUNT(*) FROM despesas').fetchone()[0]
-            total_value = conn.execute('SELECT SUM(valor) FROM despesas').fetchone()[0] or 0
+            total_routes = db.routes.count_documents({})
+            total_expenses = db.despesas.count_documents({})
+            
+            # Total value using aggregation
+            pipeline = [{"$group": {"_id": None, "total": {"$sum": "$valor"}}}]
+            result = list(db.despesas.aggregate(pipeline))
+            total_value = result[0]["total"] if result else 0
         
-        conn.close()
+        client.close()
         
         return {
             "total_routes": total_routes,
@@ -156,43 +149,39 @@ def get_dashboard_stats(user_id=None):
 def get_chart_data(user_id=None):
     """Retorna dados para gráficos"""
     try:
-        conn = get_db_connection()
+        client, db = get_db_connection()
+        if not db:
+            return {
+                "expenses_by_category": [],
+                "monthly_expenses": []
+            }
         
         # Despesas por categoria
-        if user_id:
-            expenses_by_category = conn.execute('''
-                SELECT categoria, SUM(valor) as total 
-                FROM despesas 
-                WHERE user_id = ?
-                GROUP BY categoria
-            ''', (user_id,)).fetchall()
-            
-            monthly_expenses = conn.execute('''
-                SELECT strftime('%Y-%m', data) as month, SUM(valor) as total 
-                FROM despesas 
-                WHERE user_id = ?
-                GROUP BY strftime('%Y-%m', data)
-                ORDER BY month
-            ''', (user_id,)).fetchall()
-        else:
-            expenses_by_category = conn.execute('''
-                SELECT categoria, SUM(valor) as total 
-                FROM despesas 
-                GROUP BY categoria
-            ''').fetchall()
-            
-            monthly_expenses = conn.execute('''
-                SELECT strftime('%Y-%m', data) as month, SUM(valor) as total 
-                FROM despesas 
-                GROUP BY strftime('%Y-%m', data)
-                ORDER BY month
-            ''').fetchall()
+        match_stage = {"$match": {"user_id": user_id}} if user_id else {"$match": {}}
         
-        conn.close()
+        category_pipeline = [
+            match_stage,
+            {"$group": {"_id": "$categoria", "total": {"$sum": "$valor"}}}
+        ]
+        expenses_by_category = list(db.despesas.aggregate(category_pipeline))
+        
+        monthly_pipeline = [
+            match_stage,
+            {
+                "$group": {
+                    "_id": {"$dateToString": {"format": "%Y-%m", "date": "$data"}},
+                    "total": {"$sum": "$valor"}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+        monthly_expenses = list(db.despesas.aggregate(monthly_pipeline))
+        
+        client.close()
         
         return {
-            "expenses_by_category": [dict(row) for row in expenses_by_category],
-            "monthly_expenses": [dict(row) for row in monthly_expenses]
+            "expenses_by_category": [{"categoria": item["_id"], "total": item["total"]} for item in expenses_by_category],
+            "monthly_expenses": [{"month": item["_id"], "total": item["total"]} for item in monthly_expenses]
         }
     except Exception as e:
         return {
