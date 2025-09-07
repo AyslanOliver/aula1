@@ -189,5 +189,93 @@ def get_chart_data(user_id=None):
             "monthly_expenses": []
         }
 
+def create_route(user_id, origem, destino, distancia, tempo_estimado):
+    """Cria uma nova rota"""
+    try:
+        client, db = get_db_connection()
+        if not db:
+            return False
+        
+        route_doc = {
+            "user_id": user_id,
+            "origem": origem,
+            "destino": destino,
+            "distancia": float(distancia) if distancia else 0,
+            "tempo_estimado": tempo_estimado,
+            "created_at": datetime.now()
+        }
+        
+        result = db.routes.insert_one(route_doc)
+        client.close()
+        return bool(result.inserted_id)
+    except Exception as e:
+        print(f"Error creating route: {e}")
+        return False
+
+def get_routes(user_id=None):
+    """Retorna lista de rotas"""
+    try:
+        client, db = get_db_connection()
+        if not db:
+            return []
+        
+        filter_query = {"user_id": user_id} if user_id else {}
+        routes = list(db.routes.find(filter_query).sort("created_at", -1))
+        
+        # Convert ObjectId to string
+        for route in routes:
+            route["_id"] = str(route["_id"])
+        
+        client.close()
+        return routes
+    except Exception as e:
+        print(f"Error getting routes: {e}")
+        return []
+
+def create_despesa(user_id, descricao, valor, categoria, data):
+    """Cria uma nova despesa"""
+    try:
+        client, db = get_db_connection()
+        if not db:
+            return False
+        
+        despesa_doc = {
+            "user_id": user_id,
+            "descricao": descricao,
+            "valor": float(valor),
+            "categoria": categoria,
+            "data": datetime.strptime(data, "%Y-%m-%d") if isinstance(data, str) else data,
+            "created_at": datetime.now()
+        }
+        
+        result = db.despesas.insert_one(despesa_doc)
+        client.close()
+        return bool(result.inserted_id)
+    except Exception as e:
+        print(f"Error creating despesa: {e}")
+        return False
+
+def get_despesas(user_id=None):
+    """Retorna lista de despesas"""
+    try:
+        client, db = get_db_connection()
+        if not db:
+            return []
+        
+        filter_query = {"user_id": user_id} if user_id else {}
+        despesas = list(db.despesas.find(filter_query).sort("data", -1))
+        
+        # Convert ObjectId to string and format dates
+        for despesa in despesas:
+            despesa["_id"] = str(despesa["_id"])
+            if isinstance(despesa.get("data"), datetime):
+                despesa["data"] = despesa["data"].strftime("%Y-%m-%d")
+        
+        client.close()
+        return despesas
+    except Exception as e:
+        print(f"Error getting despesas: {e}")
+        return []
+
 # Inicializar banco de dados
 init_db()
