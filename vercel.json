@@ -13,6 +13,8 @@
     }
   ],
   "env": {
-    "FLASK_ENV": "production"
+    "FLASK_ENV": "production",
+    "SECRET_KEY": "your-production-secret-key",
+    "MONGODB_URI": "mongodb+srv://username:password@cluster.mongodb.net/aula1_db?retryWrites=true&w=majority"
   }
 }

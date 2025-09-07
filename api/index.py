@@ -12,7 +12,9 @@ init_db()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    user_id = session.get('user_id')
+    stats = get_dashboard_stats(user_id)
+    return render_template('index.html', stats=stats)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -124,25 +126,9 @@ def relatorios_despesas():
 
 @app.route('/charts')
 def charts():
-    conn = get_db_connection()
-    # Dados para gráficos
-    despesas_por_categoria = conn.execute('''
-        SELECT categoria, SUM(valor) as total 
-        FROM despesas 
-        GROUP BY categoria
-    ''').fetchall()
-    
-    despesas_por_mes = conn.execute('''
-        SELECT strftime('%Y-%m', data) as mes, SUM(valor) as total 
-        FROM despesas 
-        GROUP BY strftime('%Y-%m', data)
-        ORDER BY mes
-    ''').fetchall()
-    
-    conn.close()
-    return render_template('charts.html', 
-                         despesas_por_categoria=despesas_por_categoria,
-                         despesas_por_mes=despesas_por_mes)
+    user_id = session.get('user_id')
+    chart_data = get_chart_data(user_id)
+    return render_template('charts.html', chart_data=chart_data)
 
 @app.route('/tables')
 def tables():
