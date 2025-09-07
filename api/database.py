@@ -11,13 +11,24 @@ DB_NAME = 'aula1_db'
 def init_db():
     """Inicializa o banco de dados MongoDB"""
     try:
-        client = pymongo.MongoClient(MONGO_URI)
+        # Verifica se MONGODB_URI está configurado
+        if not MONGO_URI or MONGO_URI == 'mongodb://localhost:27017/':
+            print("Warning: MONGODB_URI not configured properly")
+            return False
+            
+        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         db = client[DB_NAME]
         
+        # Test connection
+        client.server_info()
+        
         # Create indexes for better performance
-        db.users.create_index("email", unique=True)
-        db.routes.create_index("user_id")
-        db.despesas.create_index("user_id")
+        try:
+            db.users.create_index("email", unique=True)
+            db.routes.create_index("user_id")
+            db.despesas.create_index("user_id")
+        except Exception:
+            pass  # Indexes may already exist
         
         client.close()
         return True
@@ -277,5 +288,5 @@ def get_despesas(user_id=None):
         print(f"Error getting despesas: {e}")
         return []
 
-# Inicializar banco de dados
-init_db()
+# Banco de dados será inicializado quando necessário
+# init_db() será chamado no index.py

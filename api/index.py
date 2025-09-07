@@ -7,14 +7,28 @@ app = Flask(__name__,
            static_folder='../static')
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-# Initialize database
-init_db()
+# Initialize database (safe initialization)
+try:
+    init_db()
+except Exception as e:
+    print(f"Database initialization failed: {e}")
 
 @app.route('/')
 def index():
-    user_id = session.get('user_id')
-    stats = get_dashboard_stats(user_id)
-    return render_template('index.html', stats=stats)
+    try:
+        user_id = session.get('user_id')
+        stats = get_dashboard_stats(user_id)
+        return render_template('index.html', stats=stats)
+    except Exception as e:
+        print(f"Error in index route: {e}")
+        # Return default stats if database fails
+        default_stats = {
+            'total_routes': 0,
+            'total_expenses': 0,
+            'total_distance': 0,
+            'avg_time': 0
+        }
+        return render_template('index.html', stats=default_stats)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
