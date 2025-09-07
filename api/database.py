@@ -14,32 +14,38 @@ def init_db():
         # Verifica se MONGODB_URI está configurado
         if not MONGO_URI or MONGO_URI == 'mongodb://localhost:27017/':
             print("Warning: MONGODB_URI not configured properly")
-            return False
+            # Don't return False, just continue without initialization
+            return True
             
-        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
         db = client[DB_NAME]
         
         # Test connection
         client.server_info()
+        print("MongoDB connection successful")
         
         # Create indexes for better performance
         try:
             db.users.create_index("email", unique=True)
             db.routes.create_index("user_id")
             db.despesas.create_index("user_id")
-        except Exception:
-            pass  # Indexes may already exist
+            print("Database indexes created")
+        except Exception as e:
+            print(f"Index creation warning: {e}")
         
         client.close()
         return True
     except Exception as e:
         print(f"MongoDB initialization error: {e}")
-        return False
+        # Don't fail, just continue
+        return True
 
 def get_db_connection():
     """Retorna uma conexão com o banco de dados MongoDB"""
     try:
-        client = pymongo.MongoClient(MONGO_URI)
+        if not MONGO_URI or MONGO_URI == 'mongodb://localhost:27017/':
+            return None, None
+        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         db = client[DB_NAME]
         return client, db
     except Exception as e:

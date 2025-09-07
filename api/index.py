@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
-from database import init_db, create_user, authenticate_user, get_dashboard_stats, get_chart_data, create_route, get_routes, create_despesa, get_despesas
+try:
+    from .database import init_db, create_user, authenticate_user, get_dashboard_stats, get_chart_data, create_route, get_routes, create_despesa, get_despesas
+except ImportError:
+    from database import init_db, create_user, authenticate_user, get_dashboard_stats, get_chart_data, create_route, get_routes, create_despesa, get_despesas
 
 app = Flask(__name__, 
            template_folder='../templates',
@@ -141,9 +144,6 @@ def tables():
     stats = get_dashboard_stats(user_id)
     return render_template('tables.html', stats=stats)
 
-# Handler para Vercel
-# Export the app for Vercel
-app = app
-
+# Handler para Vercel - Export the Flask app
 if __name__ == '__main__':
     app.run(debug=True)
