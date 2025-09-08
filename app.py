@@ -8,9 +8,10 @@ import pandas as pd
 from database import db_manager
 import hashlib
 from datetime import datetime
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Mude para uma chave secreta segura
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Configuração Flask-Login
 login_manager = LoginManager()
@@ -604,11 +605,10 @@ def create_expense_monthly_chart(data):
     return graphJSON
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') != 'production'
     app.run(
-        debug=True, 
+        debug=debug, 
         host='0.0.0.0', 
-        port=5000,
-        use_reloader=True,
-        use_debugger=True,
-        threaded=True
+        port=port
     )
