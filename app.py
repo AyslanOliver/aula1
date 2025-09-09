@@ -4,7 +4,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import json
 import plotly
 import plotly.graph_objs as go
-import pandas as pd
 from database import db_manager
 import hashlib
 from datetime import datetime
