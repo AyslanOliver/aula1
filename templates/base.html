@@ -4,10 +4,25 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
+    <meta name="description" content="Aplicativo para gestão de despesas pessoais">
     <meta name="author" content="">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4e73df">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Despesas">
+    <meta name="msapplication-TileColor" content="#4e73df">
+    <meta name="msapplication-config" content="/static/browserconfig.xml">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/icon-192.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icon-192.svg') }}">
 
-    <title>{% block title %}SB Admin 2{% endblock %}</title>
+    <title>{% block title %}Gestor de Despesas{% endblock %}</title>
 
     <!-- Custom fonts for this template-->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" type="text/css">
@@ -37,6 +52,20 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

@@ -1,0 +1,10 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="24" fill="#4e73df"/>
+  <path d="M48 96C48 69.49 69.49 48 96 48C122.51 48 144 69.49 144 96C144 122.51 122.51 144 96 144C69.49 144 48 122.51 48 96Z" fill="white"/>
+  <path d="M96 64C87.16 64 80 71.16 80 80V112C80 120.84 87.16 128 96 128C104.84 128 112 120.84 112 112V80C112 71.16 104.84 64 96 64Z" fill="#4e73df"/>
+  <path d="M88 80H104V88H88V80Z" fill="white"/>
+  <path d="M88 96H104V104H88V96Z" fill="white"/>
+  <path d="M88 112H104V120H88V112Z" fill="white"/>
+  <circle cx="96" cy="76" r="4" fill="#4e73df"/>
+  <text x="96" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">$</text>
+</svg>
