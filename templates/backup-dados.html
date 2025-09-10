@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+
+{% block title %}Backup de Dados - Gestor de Despesas{% endblock %}
+
+{% block body %}
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-dark-gray sidebar sidebar-dark accordion" id="accordionSidebar">
+
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('dashboard') }}">
+            <div class="sidebar-brand-icon rotate-n-15">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3"> Suas Rotas <sup>🚚</sup></div>
+        </a>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Dashboard</span></a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            🚚 Gestão de Rotas
+        </div>
+
+        <!-- Nav Item - Pages Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                aria-expanded="true" aria-controls="collapseTwo">
+                <i class="fas fa-truck"></i>
+                <span>Gestão de Rotas</span>
+            </a>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Cadastre suas Rotas:</h6>
+                    <a class="collapse-item" href="{{ url_for('routes') }}">Cadastrar Rota</a>
+                    <a class="collapse-item" href="{{ url_for('view_routes') }}">Visualizar Rotas</a>
+                </div>
+            </div>
+        </li>
+
+        <!-- Nav Item - Utilities Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilitiesBackup"
+                    aria-expanded="true" aria-controls="collapseUtilitiesBackup">
+                <i class="fas fa-dollar-sign"></i>
+                <span>💰 Gestão Financeira</span>
+            </a>
+            <div id="collapseUtilitiesBackup" class="collapse" aria-labelledby="headingUtilities"
+                    data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Gerencie suas Finanças:</h6>
+                    <a class="collapse-item" href="{{ url_for('cadastrar_despesa') }}">Cadastrar Despesa</a>
+                    <a class="collapse-item" href="{{ url_for('visualizar_despesas') }}">Visualizar Despesas</a>
+                </div>
+            </div>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            📈 Relatórios e Analytics
+        </div>
+
+        <!-- Nav Item - Reports Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReportsBackup"
+                    aria-expanded="true" aria-controls="collapseReportsBackup">
+                <i class="fas fa-chart-line"></i>
+                <span>Relatórios</span>
+            </a>
+            <div id="collapseReportsBackup" class="collapse" aria-labelledby="headingReports"
+                    data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Análises e Relatórios:</h6>
+                    <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
+                    <a class="collapse-item" href="{{ url_for('charts') }}">Gráficos e Charts</a>
+                    <a class="collapse-item" href="{{ url_for('performance_periodo') }}">Performance por Período</a>
+                    <a class="collapse-item" href="{{ url_for('analise_rentabilidade') }}">Análise de Rentabilidade</a>
+                </div>
+            </div>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            ⚙️ Configurações
+        </div>
+
+        <!-- Nav Item - Settings Collapse Menu -->
+        <li class="nav-item active">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseSettings"
+                aria-expanded="true" aria-controls="collapseSettings">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+            <div id="collapseSettings" class="collapse show" aria-labelledby="headingSettings" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Sistema:</h6>
+                    <a class="collapse-item" href="{{ url_for('perfil') }}">Perfil do Usuário</a>
+                    <a class="collapse-item" href="{{ url_for('tables') }}">Dados do Sistema</a>
+                    <a class="collapse-item active" href="{{ url_for('backup_dados') }}">Backup de Dados</a>
+                    <div class="collapse-divider"></div>
+                    <h6 class="collapse-header">Acesso:</h6>
+                    <a class="collapse-item" href="{{ url_for('login') }}">Login</a>
+                    <a class="collapse-item" href="{{ url_for('register') }}">Registrar</a>
+                    <a class="collapse-item" href="{{ url_for('forgot_password') }}">Recuperar Senha</a>
+                </div>
+            </div>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Sidebar Toggler (Sidebar) -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ current_user.name or current_user.email }}</span>
+                            <img class="img-profile rounded-circle"
+                                src="{{ url_for('static', filename='img/undraw_profile.svg') }}">
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{{ url_for('perfil') }}">
+                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Perfil
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+
+                </ul>
+
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">💾 Backup de Dados</h1>
+                    <div class="d-none d-lg-inline-block">
+                        <button class="btn btn-success" onclick="createFullBackup()">
+                            <i class="fas fa-download fa-sm text-white-50"></i> Backup Completo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+
+                    <!-- Backup Status Cards -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Último Backup</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">Hoje</div>
+                                        <small class="text-muted">15:30</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Backups Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Total de Backups</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
+                                        <small class="text-success">Disponíveis</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-database fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Used Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Espaço Utilizado</div>
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-auto">
+                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">2.4 GB</div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress progress-sm mr-2">
+                                                    <div class="progress-bar bg-info" role="progressbar"
+                                                        style="width: 48%" aria-valuenow="48" aria-valuemin="0"
+                                                        aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-hdd fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auto Backup Status Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Backup Automático</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">Ativo</div>
+                                        <small class="text-success">Diário às 02:00</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-sync-alt fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+
+                    <!-- Backup Actions -->
+                    <div class="col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">📤 Exportar Dados</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <button class="btn btn-primary btn-block" onclick="exportRoutes()">
+                                            <i class="fas fa-truck mr-2"></i>Exportar Rotas
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <button class="btn btn-success btn-block" onclick="exportExpenses()">
+                                            <i class="fas fa-dollar-sign mr-2"></i>Exportar Despesas
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <button class="btn btn-info btn-block" onclick="exportUsers()">
+                                            <i class="fas fa-users mr-2"></i>Exportar Usuários
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <button class="btn btn-warning btn-block" onclick="exportReports()">
+                                            <i class="fas fa-chart-bar mr-2"></i>Exportar Relatórios
+                                        </button>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button class="btn btn-dark btn-block" onclick="createFullBackup()">
+                                            <i class="fas fa-download mr-2"></i>Backup Completo (JSON)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import Data -->
+                    <div class="col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">📥 Importar Dados</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="importFile" class="form-label">Selecionar arquivo de backup:</label>
+                                    <input type="file" class="form-control" id="importFile" accept=".json,.csv,.xlsx">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="importType" class="form-label">Tipo de dados:</label>
+                                    <select class="form-control" id="importType">
+                                        <option value="full">Backup Completo</option>
+                                        <option value="routes">Apenas Rotas</option>
+                                        <option value="expenses">Apenas Despesas</option>
+                                        <option value="users">Apenas Usuários</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="overwriteData">
+                                        <label class="form-check-label" for="overwriteData">
+                                            Sobrescrever dados existentes
+                                        </label>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="importData()">
+                                    <i class="fas fa-upload mr-2"></i>Importar Dados
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+
+                    <!-- Backup History -->
+                    <div class="col-lg-8">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">📋 Histórico de Backups</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Data/Hora</th>
+                                                <th>Tipo</th>
+                                                <th>Tamanho</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2024-01-15 15:30</td>
+                                                <td><span class="badge badge-primary">Completo</span></td>
+                                                <td>2.4 MB</td>
+                                                <td><span class="badge badge-success">Sucesso</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('backup_20240115_1530.json')">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('backup_20240115_1530.json')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-01-14 02:00</td>
+                                                <td><span class="badge badge-info">Automático</span></td>
+                                                <td>2.3 MB</td>
+                                                <td><span class="badge badge-success">Sucesso</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('backup_20240114_0200.json')">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('backup_20240114_0200.json')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-01-13 02:00</td>
+                                                <td><span class="badge badge-info">Automático</span></td>
+                                                <td>2.2 MB</td>
+                                                <td><span class="badge badge-success">Sucesso</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('backup_20240113_0200.json')">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('backup_20240113_0200.json')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-01-12 14:15</td>
+                                                <td><span class="badge badge-warning">Rotas</span></td>
+                                                <td>0.8 MB</td>
+                                                <td><span class="badge badge-success">Sucesso</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('backup_routes_20240112_1415.json')">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('backup_routes_20240112_1415.json')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup Settings -->
+                    <div class="col-lg-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">⚙️ Configurações</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Backup Automático:</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                                        <label class="form-check-label" for="autoBackup">
+                                            Ativar backup automático
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="backupFrequency" class="form-label">Frequência:</label>
+                                    <select class="form-control" id="backupFrequency">
+                                        <option value="daily" selected>Diário</option>
+                                        <option value="weekly">Semanal</option>
+                                        <option value="monthly">Mensal</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="backupTime" class="form-label">Horário:</label>
+                                    <input type="time" class="form-control" id="backupTime" value="02:00">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="retentionDays" class="form-label">Manter por (dias):</label>
+                                    <input type="number" class="form-control" id="retentionDays" value="30" min="1" max="365">
+                                </div>
+                                <button class="btn btn-success btn-block" onclick="saveBackupSettings()">
+                                    <i class="fas fa-save mr-2"></i>Salvar Configurações
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Gestor de Rotas 2024</span>
+                </div>
+            </div>
+        </footer>
+        <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="progressModalLabel">Processando Backup</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                         style="width: 0%" id="progressBar"></div>
+                </div>
+                <p id="progressText">Iniciando backup...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Export functions
+function exportRoutes() {
+    showProgress('Exportando rotas...');
+    // Simulate export process
+    setTimeout(() => {
+        hideProgress();
+        downloadFile('rotas_backup.json', {routes: 'sample_data'});
+        showAlert('Rotas exportadas com sucesso!', 'success');
+    }, 2000);
+}
+
+function exportExpenses() {
+    showProgress('Exportando despesas...');
+    setTimeout(() => {
+        hideProgress();
+        downloadFile('despesas_backup.json', {expenses: 'sample_data'});
+        showAlert('Despesas exportadas com sucesso!', 'success');
+    }, 2000);
+}
+
+function exportUsers() {
+    showProgress('Exportando usuários...');
+    setTimeout(() => {
+        hideProgress();
+        downloadFile('usuarios_backup.json', {users: 'sample_data'});
+        showAlert('Usuários exportados com sucesso!', 'success');
+    }, 1500);
+}
+
+function exportReports() {
+    showProgress('Exportando relatórios...');
+    setTimeout(() => {
+        hideProgress();
+        downloadFile('relatorios_backup.json', {reports: 'sample_data'});
+        showAlert('Relatórios exportados com sucesso!', 'success');
+    }, 2500);
+}
+
+function createFullBackup() {
+    showProgress('Criando backup completo...');
+    setTimeout(() => {
+        hideProgress();
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            version: '1.0',
+            data: {
+                routes: 'sample_routes_data',
+                expenses: 'sample_expenses_data',
+                users: 'sample_users_data',
+                reports: 'sample_reports_data'
+            }
+        };
+        downloadFile('backup_completo_' + new Date().toISOString().slice(0,10) + '.json', backupData);
+        showAlert('Backup completo criado com sucesso!', 'success');
+    }, 3000);
+}
+
+// Import function
+function importData() {
+    const fileInput = document.getElementById('importFile');
+    const importType = document.getElementById('importType').value;
+    const overwrite = document.getElementById('overwriteData').checked;
+    
+    if (!fileInput.files[0]) {
+        showAlert('Por favor, selecione um arquivo para importar.', 'warning');
+        return;
+    }
+    
+    showProgress('Importando dados...');
+    setTimeout(() => {
+        hideProgress();
+        showAlert('Dados importados com sucesso!', 'success');
+        // Refresh the page or update the UI
+    }, 2500);
+}
+
+// Backup management functions
+function downloadBackup(filename) {
+    showAlert('Download do backup iniciado: ' + filename, 'info');
+    // Simulate download
+}
+
+function deleteBackup(filename) {
+    if (confirm('Tem certeza que deseja excluir este backup?')) {
+        showAlert('Backup excluído: ' + filename, 'success');
+        // Remove from table or refresh
+    }
+}
+
+// Settings function
+function saveBackupSettings() {
+    const autoBackup = document.getElementById('autoBackup').checked;
+    const frequency = document.getElementById('backupFrequency').value;
+    const time = document.getElementById('backupTime').value;
+    const retention = document.getElementById('retentionDays').value;
+    
+    showAlert('Configurações de backup salvas com sucesso!', 'success');
+}
+
+// Utility functions
+function showProgress(text) {
+    document.getElementById('progressText').textContent = text;
+    document.getElementById('progressBar').style.width = '0%';
+    $('#progressModal').modal('show');
+    
+    // Simulate progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 30;
+        if (progress > 100) progress = 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        if (progress >= 100) clearInterval(interval);
+    }, 200);
+}
+
+function hideProgress() {
+    $('#progressModal').modal('hide');
+}
+
+function downloadFile(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function showAlert(message, type) {
+    // Create and show bootstrap alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 5000);
+}
+</script>
+
+{% endblock %}

@@ -423,6 +423,91 @@ def get_expense(expense_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def perfil():
+    if request.method == 'POST':
+        # Atualizar dados do perfil
+        name = request.form.get('name')
+        birth_date = request.form.get('birth_date')
+        license_plate = request.form.get('license_plate')
+        car_model = request.form.get('car_model')
+        
+        result = db_manager.update_user_profile(current_user.id, {
+            'name': name,
+            'birth_date': birth_date,
+            'license_plate': license_plate,
+            'car_model': car_model
+        })
+        
+        if result['success']:
+            flash('Perfil atualizado com sucesso!', 'success')
+        else:
+            flash('Erro ao atualizar perfil.', 'error')
+        
+        return redirect(url_for('perfil'))
+    
+    # Buscar dados do usuário
+    user_data = db_manager.get_user_by_id(current_user.id)
+    
+    # Buscar estatísticas
+    stats = {
+        'total_routes': db_manager.count_user_routes(current_user.id),
+        'total_expenses': db_manager.count_user_expenses(current_user.id)
+    }
+    
+    return render_template('perfil.html', user_data=user_data, stats=stats)
+
+@app.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    if not all([current_password, new_password, confirm_password]):
+        flash('Por favor, preencha todos os campos.', 'error')
+        return redirect(url_for('perfil'))
+    
+    if new_password != confirm_password:
+        flash('As senhas não coincidem.', 'error')
+        return redirect(url_for('perfil'))
+    
+    if len(new_password) < 6:
+        flash('A nova senha deve ter pelo menos 6 caracteres.', 'error')
+        return redirect(url_for('perfil'))
+    
+    # Verificar senha atual
+    user_data = db_manager.get_user_by_id(current_user.id)
+    if not check_password_hash(user_data['password'], current_password):
+        flash('Senha atual incorreta.', 'error')
+        return redirect(url_for('perfil'))
+    
+    # Atualizar senha
+    result = db_manager.update_user_password(current_user.id, new_password)
+    
+    if result['success']:
+        flash('Senha alterada com sucesso!', 'success')
+    else:
+        flash('Erro ao alterar senha.', 'error')
+    
+    return redirect(url_for('perfil'))
+
+@app.route('/performance-periodo')
+@login_required
+def performance_periodo():
+    return render_template('performance-periodo.html')
+
+@app.route('/analise-rentabilidade')
+@login_required
+def analise_rentabilidade():
+    return render_template('analise-rentabilidade.html')
+
+@app.route('/backup-dados')
+@login_required
+def backup_dados():
+    return render_template('backup-dados.html')
+
 @app.route('/relatorios-despesas')
 @login_required
 def relatorios_despesas():
@@ -611,6 +696,11 @@ def create_expense_monthly_chart(data):
     
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return graphJSON
+
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

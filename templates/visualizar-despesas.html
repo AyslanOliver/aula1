@@ -77,19 +77,17 @@
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilitiesVisualizar"
+                    aria-expanded="true" aria-controls="collapseUtilitiesVisualizar">
                     <i class="fas fa-dollar-sign"></i>
                     <span>💰 Gestão Financeira</span>
                 </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                <div id="collapseUtilitiesVisualizar" class="collapse" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Gerencie suas Finanças:</h6>
                         <a class="collapse-item" href="{{ url_for('cadastrar_despesa') }}">Cadastrar Despesa</a>
                         <a class="collapse-item active" href="{{ url_for('visualizar_despesas') }}">Visualizar Despesas</a>
-                        <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
-                        <a class="collapse-item" href="#">Fluxo de Caixa</a>
                     </div>
                 </div>
             </li>
@@ -104,12 +102,12 @@
 
             <!-- Nav Item - Analytics Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAnalytics"
-                    aria-expanded="true" aria-controls="collapseAnalytics">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAnalyticsVisualizar"
+                    aria-expanded="true" aria-controls="collapseAnalyticsVisualizar">
                     <i class="fas fa-chart-line"></i>
                     <span>Relatórios e Analytics</span>
                 </a>
-                <div id="collapseAnalytics" class="collapse" aria-labelledby="headingAnalytics" data-parent="#accordionSidebar">
+                <div id="collapseAnalyticsVisualizar" class="collapse" aria-labelledby="headingAnalytics" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Relatórios:</h6>
                         <a class="collapse-item" href="#">Relatórios de Rotas</a>

@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Página Não Encontrada - Gestor de Despesas{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mt-5">
+                <!-- 404 Error Text -->
+                <div class="error mx-auto" data-text="404">
+                    <p class="m-0">404</p>
+                </div>
+                <p class="text-gray-500 mb-0">Página Não Encontrada</p>
+                <p class="lead text-gray-800 mb-5">Parece que você se perdeu nas rotas...</p>
+                
+                <!-- 404 Illustration -->
+                <div class="mb-5">
+                    <svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Road -->
+                        <path d="M50 150 Q150 100 250 150" stroke="#6c757d" stroke-width="20" fill="none" stroke-linecap="round"/>
+                        <path d="M50 150 Q150 100 250 150" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="10,10"/>
+                        
+                        <!-- Truck -->
+                        <g transform="translate(120, 130)">
+                            <!-- Truck body -->
+                            <rect x="0" y="0" width="60" height="25" fill="#4e73df" rx="3"/>
+                            <rect x="45" y="-15" width="25" height="15" fill="#2e59d9" rx="2"/>
+                            
+                            <!-- Wheels -->
+                            <circle cx="15" cy="30" r="8" fill="#2c2c2c"/>
+                            <circle cx="15" cy="30" r="5" fill="#666"/>
+                            <circle cx="50" cy="30" r="8" fill="#2c2c2c"/>
+                            <circle cx="50" cy="30" r="5" fill="#666"/>
+                            
+                            <!-- Headlights -->
+                            <circle cx="65" cy="5" r="3" fill="#f8f9fc"/>
+                            <circle cx="65" cy="15" r="3" fill="#f8f9fc"/>
+                        </g>
+                        
+                        <!-- Question marks floating around -->
+                        <text x="80" y="50" font-family="Arial, sans-serif" font-size="24" fill="#e74a3b" opacity="0.7">?</text>
+                        <text x="200" y="70" font-family="Arial, sans-serif" font-size="20" fill="#f6c23e" opacity="0.7">?</text>
+                        <text x="160" y="40" font-family="Arial, sans-serif" font-size="18" fill="#1cc88a" opacity="0.7">?</text>
+                        
+                        <!-- Road signs -->
+                        <g transform="translate(30, 80)">
+                            <rect x="0" y="0" width="30" height="20" fill="#e74a3b" rx="2"/>
+                            <text x="15" y="13" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">STOP</text>
+                            <rect x="12" y="20" width="6" height="30" fill="#6c757d"/>
+                        </g>
+                        
+                        <g transform="translate(220, 90)">
+                            <polygon points="15,0 30,15 15,30 0,15" fill="#f6c23e"/>
+                            <text x="15" y="18" font-family="Arial, sans-serif" font-size="12" fill="black" text-anchor="middle">!</text>
+                            <rect x="12" y="30" width="6" height="25" fill="#6c757d"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <!-- Error Message -->
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card border-0 shadow">
+                            <div class="card-body p-5">
+                                <h4 class="card-title text-primary mb-4">
+                                    <i class="fas fa-route mr-2"></i>
+                                    Ops! Rota não encontrada
+                                </h4>
+                                <p class="card-text text-gray-600 mb-4">
+                                    A página que você está procurando não existe ou foi movida para outro endereço. 
+                                    Não se preocupe, vamos te ajudar a voltar ao caminho certo!
+                                </p>
+                                
+                                <!-- Quick Actions -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-block">
+                                            <i class="fas fa-tachometer-alt mr-2"></i>
+                                            Voltar ao Dashboard
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('routes') }}" class="btn btn-success btn-block">
+                                            <i class="fas fa-truck mr-2"></i>
+                                            Gerenciar Rotas
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('visualizar_despesas') }}" class="btn btn-info btn-block">
+                                            <i class="fas fa-dollar-sign mr-2"></i>
+                                            Ver Despesas
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('charts') }}" class="btn btn-warning btn-block">
+                                            <i class="fas fa-chart-bar mr-2"></i>
+                                            Relatórios
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Search Box -->
+                                <div class="mb-4">
+                                    <h6 class="text-gray-800 mb-3">Ou procure por algo específico:</h6>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="Digite o que você está procurando..." id="searchInput">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-primary" type="button" onclick="performSearch()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Popular Links -->
+                                <div class="text-left">
+                                    <h6 class="text-gray-800 mb-3">Links populares:</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('cadastrar_despesa') }}" class="text-decoration-none">
+                                                        <i class="fas fa-plus-circle text-success mr-2"></i>
+                                                        Cadastrar Nova Despesa
+                                                    </a>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('view_routes') }}" class="text-decoration-none">
+                                                        <i class="fas fa-list text-primary mr-2"></i>
+                                                        Visualizar Todas as Rotas
+                                                    </a>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('perfil') }}" class="text-decoration-none">
+                                                        <i class="fas fa-user text-info mr-2"></i>
+                                                        Meu Perfil
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('relatorios_despesas') }}" class="text-decoration-none">
+                                                        <i class="fas fa-chart-pie text-warning mr-2"></i>
+                                                        Relatórios Financeiros
+                                                    </a>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('performance_periodo') }}" class="text-decoration-none">
+                                                        <i class="fas fa-chart-line text-success mr-2"></i>
+                                                        Performance por Período
+                                                    </a>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <a href="{{ url_for('backup_dados') }}" class="text-decoration-none">
+                                                        <i class="fas fa-database text-secondary mr-2"></i>
+                                                        Backup de Dados
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Help Section -->
+                <div class="row mt-5">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary">
+                                    <i class="fas fa-question-circle mr-2"></i>
+                                    Precisa de ajuda?
+                                </h6>
+                                <p class="card-text small text-gray-600 mb-3">
+                                    Se você continua tendo problemas para encontrar o que procura, 
+                                    entre em contato com o suporte ou consulte a documentação.
+                                </p>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary btn-sm btn-block" onclick="showHelp()">
+                                            <i class="fas fa-life-ring mr-1"></i>
+                                            Suporte
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-info btn-sm btn-block" onclick="showDocs()">
+                                            <i class="fas fa-book mr-1"></i>
+                                            Documentação
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error {
+    font-size: 7rem;
+    position: relative;
+    line-height: 1;
+    width: 12.5rem;
+}
+
+.error:before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #e74a3b;
+    z-index: -1;
+    text-shadow: -1px -1px 0px #f8f9fc, 1px -1px 0px #f8f9fc, -1px 1px 0px #f8f9fc, 1px 1px 0px #f8f9fc;
+}
+
+.error {
+    color: #4e73df;
+    text-shadow: 2px 2px 0px #e74a3b;
+}
+
+/* Animation for floating elements */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.error {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Hover effects for buttons */
+.btn:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Card hover effect */
+.card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+function performSearch() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Simple search logic - redirect to relevant pages based on keywords
+    if (searchTerm.includes('rota') || searchTerm.includes('route')) {
+        window.location.href = "{{ url_for('routes') }}";
+    } else if (searchTerm.includes('despesa') || searchTerm.includes('expense')) {
+        window.location.href = "{{ url_for('visualizar_despesas') }}";
+    } else if (searchTerm.includes('dashboard') || searchTerm.includes('inicio')) {
+        window.location.href = "{{ url_for('dashboard') }}";
+    } else if (searchTerm.includes('relatorio') || searchTerm.includes('report')) {
+        window.location.href = "{{ url_for('charts') }}";
+    } else if (searchTerm.includes('perfil') || searchTerm.includes('profile')) {
+        window.location.href = "{{ url_for('perfil') }}";
+    } else if (searchTerm.includes('backup')) {
+        window.location.href = "{{ url_for('backup_dados') }}";
+    } else if (searchTerm.includes('performance')) {
+        window.location.href = "{{ url_for('performance_periodo') }}";
+    } else if (searchTerm.includes('rentabilidade') || searchTerm.includes('analise')) {
+        window.location.href = "{{ url_for('analise_rentabilidade') }}";
+    } else {
+        alert('Nenhum resultado encontrado para "' + searchTerm + '". Tente usar palavras-chave como: rota, despesa, dashboard, relatório, perfil.');
+    }
+}
+
+// Allow search on Enter key
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        performSearch();
+    }
+});
+
+function showHelp() {
+    alert('Entre em contato com o suporte:\n\nEmail: suporte@gestorrotas.com\nTelefone: (11) 9999-9999\nHorário: Segunda a Sexta, 8h às 18h');
+}
+
+function showDocs() {
+    alert('Documentação do sistema:\n\n• Como cadastrar rotas\n• Gerenciamento de despesas\n• Relatórios e análises\n• Backup e restauração\n\nEm breve disponível online!');
+}
+
+// Add some interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate question marks
+    const questionMarks = document.querySelectorAll('text');
+    questionMarks.forEach((mark, index) => {
+        mark.style.animation = `float ${2 + index * 0.5}s ease-in-out infinite`;
+    });
+});
+</script>
+
+{% endblock %}

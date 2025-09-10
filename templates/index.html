@@ -74,18 +74,17 @@
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilitiesDashboard"
+                    aria-expanded="true" aria-controls="collapseUtilitiesDashboard">
                     <i class="fas fa-dollar-sign"></i>
                     <span>💰 Gestão Financeira</span>
                 </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                <div id="collapseUtilitiesDashboard" class="collapse" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Gerencie suas Finanças:</h6>
                         <a class="collapse-item" href="{{ url_for('cadastrar_despesa') }}">Cadastrar Despesa</a>
                         <a class="collapse-item" href="{{ url_for('visualizar_despesas') }}">Visualizar Despesas</a>
-                        <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
                     </div>
                 </div>
             </li>
@@ -129,19 +128,19 @@
 
             <!-- Nav Item - Reports Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReports"
-                    aria-expanded="true" aria-controls="collapseReports">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReportsDashboard"
+                    aria-expanded="true" aria-controls="collapseReportsDashboard">
                     <i class="fas fa-chart-line"></i>
                     <span>Relatórios</span>
                 </a>
-                <div id="collapseReports" class="collapse" aria-labelledby="headingReports"
+                <div id="collapseReportsDashboard" class="collapse" aria-labelledby="headingReports"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Análises e Relatórios:</h6>
                         <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
                         <a class="collapse-item" href="{{ url_for('charts') }}">Gráficos e Charts</a>
-                        <a class="collapse-item" href="#">Performance por Período</a>
-                        <a class="collapse-item" href="#">Análise de Rentabilidade</a>
+                        <a class="collapse-item" href="{{ url_for('performance_periodo') }}">Performance por Período</a>
+                        <a class="collapse-item" href="{{ url_for('analise_rentabilidade') }}">Análise de Rentabilidade</a>
                     </div>
                 </div>
             </li>
@@ -164,9 +163,9 @@
                 <div id="collapseSettings" class="collapse" aria-labelledby="headingSettings" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Sistema:</h6>
-                        <a class="collapse-item" href="#">Perfil do Usuário</a>
+                        <a class="collapse-item" href="{{ url_for('perfil') }}">Perfil do Usuário</a>
                         <a class="collapse-item" href="{{ url_for('tables') }}">Dados do Sistema</a>
-                        <a class="collapse-item" href="#">Backup de Dados</a>
+                        <a class="collapse-item" href="{{ url_for('backup_dados') }}">Backup de Dados</a>
                         <div class="collapse-divider"></div>
                         <h6 class="collapse-header">Acesso:</h6>
                         <a class="collapse-item" href="{{ url_for('login') }}">Login</a>

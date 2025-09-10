@@ -35,7 +35,7 @@
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3"> Suas Rotas <sup>🚚</sup> <small style="color: #ca2103;">(Reload Ativo)</small></div>
+                <div class="sidebar-brand-text mx-3"> Suas Rotas <sup>🚚</sup></div>
             </a>
 
             <!-- Divider -->
@@ -74,19 +74,46 @@
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilitiesCadastrar"
+                    aria-expanded="true" aria-controls="collapseUtilitiesCadastrar">
                     <i class="fas fa-dollar-sign"></i>
                     <span>💰 Gestão Financeira</span>
                 </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                <div id="collapseUtilitiesCadastrar" class="collapse" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Gerencie suas Finanças:</h6>
                         <a class="collapse-item active" href="{{ url_for('cadastrar_despesa') }}">Cadastrar Despesa</a>
                         <a class="collapse-item" href="{{ url_for('visualizar_despesas') }}">Visualizar Despesas</a>
-                        <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
-                        <a class="collapse-item" href="#">Fluxo de Caixa</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Opções
+            </div>
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+                    aria-expanded="true" aria-controls="collapsePages">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Menu</span>
+                </a>
+                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Sistema:</h6>
+                        <a class="collapse-item" href="{{ url_for('login') }}">Login</a>
+                        <a class="collapse-item" href="{{ url_for('register') }}">Register</a>
+                        <a class="collapse-item" href="{{ url_for('forgot_password') }}">Forgot Password</a>
+                        <div class="collapse-divider"></div>
+                        <h6 class="collapse-header">Other Pages:</h6>
+                        <a class="collapse-item" href="404.html">404 Page</a>
+                        <a class="collapse-item" href="blank.html">Blank Page</a>
                     </div>
                 </div>
             </li>
@@ -99,21 +126,21 @@
                 📈 Relatórios e Analytics
             </div>
 
-            <!-- Nav Item - Analytics Collapse Menu -->
+            <!-- Nav Item - Reports Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAnalytics"
-                    aria-expanded="true" aria-controls="collapseAnalytics">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReportsCadastrar"
+                    aria-expanded="true" aria-controls="collapseReportsCadastrar">
                     <i class="fas fa-chart-line"></i>
-                    <span>Relatórios e Analytics</span>
+                    <span>Relatórios</span>
                 </a>
-                <div id="collapseAnalytics" class="collapse" aria-labelledby="headingAnalytics" data-parent="#accordionSidebar">
+                <div id="collapseReportsCadastrar" class="collapse" aria-labelledby="headingReports"
+                    data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Relatórios:</h6>
-                        <a class="collapse-item" href="#">Relatórios de Rotas</a>
+                        <h6 class="collapse-header">Análises e Relatórios:</h6>
                         <a class="collapse-item" href="{{ url_for('relatorios_despesas') }}">Relatórios Financeiros</a>
-                        <a class="collapse-item" href="#">Performance por Período</a>
-                        <a class="collapse-item" href="#">Análise de Rentabilidade</a>
-                        <a class="collapse-item" href="#">Exportar Dados</a>
+                        <a class="collapse-item" href="{{ url_for('charts') }}">Gráficos e Charts</a>
+                        <a class="collapse-item" href="{{ url_for('performance_periodo') }}">Performance por Período</a>
+                        <a class="collapse-item" href="{{ url_for('analise_rentabilidade') }}">Análise de Rentabilidade</a>
                     </div>
                 </div>
             </li>
@@ -136,10 +163,9 @@
                 <div id="collapseSettings" class="collapse" aria-labelledby="headingSettings" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Sistema:</h6>
-                        <a class="collapse-item" href="#">Perfil do Usuário</a>
-                        <a class="collapse-item" href="#">Configurações do Sistema</a>
-                        <a class="collapse-item" href="#">Backup de Dados</a>
-                        <a class="collapse-item" href="#">Preferências</a>
+                        <a class="collapse-item" href="{{ url_for('perfil') }}">Perfil do Usuário</a>
+                        <a class="collapse-item" href="{{ url_for('tables') }}">Dados do Sistema</a>
+                        <a class="collapse-item" href="{{ url_for('backup_dados') }}">Backup de Dados</a>
                         <div class="collapse-divider"></div>
                         <h6 class="collapse-header">Acesso:</h6>
                         <a class="collapse-item" href="{{ url_for('login') }}">Login</a>

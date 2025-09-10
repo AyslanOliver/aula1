@@ -515,6 +515,70 @@ class DatabaseManager:
         except Exception as e:
             print(f"Erro ao buscar despesas mensais: {e}")
             return []
+    
+    # Métodos para perfil do usuário
+    def update_user_profile(self, user_id, profile_data):
+        """Atualiza dados do perfil do usuário"""
+        try:
+            from bson import ObjectId
+            users_collection = self.db['users']
+            
+            result = users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": profile_data}
+            )
+            
+            if result.modified_count > 0:
+                return {"success": True, "message": "Perfil atualizado com sucesso"}
+            else:
+                return {"success": False, "message": "Nenhuma alteração foi feita"}
+                
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao atualizar perfil: {e}"}
+    
+    def update_user_password(self, user_id, new_password):
+        """Atualiza a senha do usuário"""
+        try:
+            from bson import ObjectId
+            users_collection = self.db['users']
+            
+            # Hash da nova senha
+            password_hash = hashlib.sha256(new_password.encode()).hexdigest()
+            
+            result = users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"password": password_hash}}
+            )
+            
+            if result.modified_count > 0:
+                return {"success": True, "message": "Senha atualizada com sucesso"}
+            else:
+                return {"success": False, "message": "Erro ao atualizar senha"}
+                
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao atualizar senha: {e}"}
+    
+    def count_user_routes(self, user_id):
+        """Conta o total de rotas do usuário"""
+        try:
+            from bson import ObjectId
+            routes_collection = self.db['routes']
+            count = routes_collection.count_documents({"user_id": ObjectId(user_id)})
+            return count
+        except Exception as e:
+            print(f"Erro ao contar rotas: {e}")
+            return 0
+    
+    def count_user_expenses(self, user_id):
+        """Conta o total de despesas do usuário"""
+        try:
+            from bson import ObjectId
+            expenses_collection = self.db['expenses']
+            count = expenses_collection.count_documents({"user_id": ObjectId(user_id)})
+            return count
+        except Exception as e:
+            print(f"Erro ao contar despesas: {e}")
+            return 0
 
 # Instância global do gerenciador de banco de dados
 db_manager = DatabaseManager()
