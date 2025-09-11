@@ -697,6 +697,90 @@ def create_expense_monthly_chart(data):
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return graphJSON
 
+@app.route('/cadastrar-pacotes-assistentes', methods=['GET', 'POST'])
+@login_required
+def cadastrar_pacotes_assistentes():
+    """Página para cadastrar pacotes para assistentes"""
+    if request.method == 'POST':
+        assistant_name = request.form.get('assistant_name')
+        delivery_date = request.form.get('delivery_date')
+        total_stops = int(request.form.get('total_stops', 0))
+        packages_delivered = int(request.form.get('packages_delivered', 0))
+        observations = request.form.get('observations', '')
+        
+        if not all([assistant_name, delivery_date, total_stops]):
+            flash('Por favor, preencha todos os campos obrigatórios.', 'error')
+            return render_template('cadastrar-pacotes-assistentes.html')
+        
+        if packages_delivered > total_stops:
+            flash('O número de pacotes entregues não pode ser maior que o total de paradas.', 'error')
+            return render_template('cadastrar-pacotes-assistentes.html')
+        
+        # Calcular valor total (R$ 2,00 por parada entregue)
+        value_per_stop = 2.00
+        total_value = packages_delivered * value_per_stop
+        
+        # Salvar no banco de dados
+        result = db_manager.create_assistant_package(
+            user_id=current_user.id,
+            assistant_name=assistant_name,
+            delivery_date=delivery_date,
+            total_stops=total_stops,
+            packages_delivered=packages_delivered,
+            value_per_stop=value_per_stop,
+            total_value=total_value,
+            observations=observations
+        )
+        
+        if result['success']:
+            flash(f'Pacotes do assistente {assistant_name} cadastrados com sucesso! Valor total: R$ {total_value:.2f}', 'success')
+            return redirect(url_for('cadastrar_pacotes_assistentes'))
+        else:
+            flash(result['message'], 'error')
+    
+    return render_template('cadastrar-pacotes-assistentes.html')
+
+@app.route('/visualizar-pacotes-assistentes')
+@login_required
+def visualizar_pacotes_assistentes():
+    """Página para visualizar todos os pacotes dos assistentes"""
+    result = db_manager.get_user_assistant_packages(current_user.id)
+    
+    if result['success']:
+        packages = result['packages']
+        # Calcular totais
+        total_value = sum(package.get('total_value', 0) for package in packages)
+        total_packages = sum(package.get('packages_delivered', 0) for package in packages)
+    else:
+        packages = []
+        total_value = 0
+        total_packages = 0
+        flash(result['message'], 'error')
+    
+    return render_template('visualizar-pacotes-assistentes.html', 
+                         packages=packages, 
+                         total_value=total_value,
+                         total_packages=total_packages)
+
+@app.route('/delete-assistant-package', methods=['POST'])
+@login_required
+def delete_assistant_package():
+    try:
+        data = request.get_json()
+        package_id = data.get('package_id')
+        
+        if not package_id:
+            return jsonify({'success': False, 'message': 'ID do pacote não fornecido'})
+        
+        success = db_manager.delete_assistant_package(current_user.id, package_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Pacote excluído com sucesso'})
+        else:
+            return jsonify({'success': False, 'message': 'Erro ao excluir pacote'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Erro: {str(e)}'})
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(error):

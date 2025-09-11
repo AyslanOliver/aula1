@@ -579,6 +579,70 @@ class DatabaseManager:
         except Exception as e:
             print(f"Erro ao contar despesas: {e}")
             return 0
+    
+    # Métodos para pacotes de assistentes
+    def create_assistant_package(self, user_id, assistant_name, delivery_date, total_stops, packages_delivered, value_per_stop, total_value, observations=""):
+        """Cria um novo registro de pacotes para assistente"""
+        try:
+            from bson import ObjectId
+            assistant_packages_collection = self.db['assistant_packages']
+            
+            package_data = {
+                "user_id": ObjectId(user_id),
+                "assistant_name": assistant_name,
+                "delivery_date": delivery_date,
+                "total_stops": total_stops,
+                "packages_delivered": packages_delivered,
+                "value_per_stop": value_per_stop,
+                "total_value": total_value,
+                "observations": observations,
+                "created_at": datetime.now()
+            }
+            
+            result = assistant_packages_collection.insert_one(package_data)
+            return {"success": True, "package_id": str(result.inserted_id)}
+        
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao cadastrar pacotes: {e}"}
+    
+    def get_user_assistant_packages(self, user_id):
+        """Busca todos os pacotes de assistentes do usuário"""
+        try:
+            from bson import ObjectId
+            assistant_packages_collection = self.db['assistant_packages']
+            
+            packages = list(assistant_packages_collection.find(
+                {"user_id": ObjectId(user_id)}
+            ).sort("delivery_date", -1))
+            
+            # Converter ObjectId para string para serialização
+            for package in packages:
+                package['_id'] = str(package['_id'])
+                package['user_id'] = str(package['user_id'])
+            
+            return {"success": True, "packages": packages}
+        
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao buscar pacotes: {e}", "packages": []}
+    
+    def delete_assistant_package(self, package_id, user_id):
+        """Deleta um registro de pacotes de assistente"""
+        try:
+            from bson import ObjectId
+            assistant_packages_collection = self.db['assistant_packages']
+            
+            result = assistant_packages_collection.delete_one({
+                "_id": ObjectId(package_id),
+                "user_id": ObjectId(user_id)
+            })
+            
+            if result.deleted_count > 0:
+                return {"success": True, "message": "Pacote deletado com sucesso"}
+            else:
+                return {"success": False, "message": "Pacote não encontrado"}
+        
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao deletar pacote: {e}"}
 
 # Instância global do gerenciador de banco de dados
 db_manager = DatabaseManager()
