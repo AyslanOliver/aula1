@@ -508,6 +508,17 @@ def analise_rentabilidade():
 def backup_dados():
     return render_template('backup-dados.html')
 
+
+
+
+
+@app.route('/delete-package/<package_id>', methods=['DELETE'])
+@login_required
+def delete_package(package_id):
+    """Deleta um pacote de assistente"""
+    result = db_manager.delete_package(package_id, current_user.id)
+    return jsonify(result)
+
 @app.route('/relatorios-despesas')
 @login_required
 def relatorios_despesas():

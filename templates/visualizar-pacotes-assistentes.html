@@ -395,6 +395,26 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
+    <!-- Delete Package Confirmation Modal -->
+    <div class="modal fade" id="deletePackageModal" tabindex="-1" role="dialog" aria-labelledby="deletePackageModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletePackageModalLabel">Confirmar Exclusão</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Tem certeza que deseja excluir este pacote? Esta ação não pode ser desfeita.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" type="button" id="confirmDeletePackage">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
@@ -417,7 +437,36 @@
 
     <!-- Bootstrap core JavaScript-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let packageToDelete = null;
+
+        function deletePackage(packageId) {
+            packageToDelete = packageId;
+            $('#deletePackageModal').modal('show');
+        }
+
+        $('#confirmDeletePackage').click(function() {
+            if (packageToDelete) {
+                $.ajax({
+                    url: '/delete-package/' + packageToDelete,
+                    type: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Erro ao deletar pacote: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Erro ao deletar pacote. Por favor, tente novamente.');
+                    }
+                });
+            }
+            $('#deletePackageModal').modal('hide');
+        });
+    </script>
 
     <!-- Core plugin JavaScript-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
@@ -439,30 +488,6 @@
                 "order": [[ 1, "desc" ]]
             });
         });
-
-        function deletePackage(packageId) {
-            if (confirm('Tem certeza que deseja excluir este pacote?')) {
-                fetch('/delete-assistant-package', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({package_id: packageId})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Erro ao excluir pacote: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Erro ao excluir pacote.');
-                });
-            }
-        }
     </script>
 
 </body>

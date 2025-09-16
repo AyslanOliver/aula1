@@ -404,6 +404,65 @@ class DatabaseManager:
             print(f"Erro ao buscar despesas: {e}")
             return []
     
+    # Métodos para gerenciamento de pacotes dos assistentes
+    def get_user_packages(self, user_id):
+        """Busca todos os pacotes de um usuário"""
+        try:
+            packages_collection = self.db['assistant_packages']
+            packages = list(packages_collection.find({"user_id": user_id}).sort("delivery_date", -1))
+            
+            # Converte ObjectId para string e ajusta datas
+            for package in packages:
+                package['_id'] = str(package['_id'])
+                if isinstance(package.get('delivery_date'), str):
+                    try:
+                        package['delivery_date'] = datetime.strptime(package['delivery_date'], '%Y-%m-%d')
+                    except ValueError:
+                        pass
+            
+            return {"success": True, "packages": packages}
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao buscar pacotes: {e}"}
+    
+    def create_package(self, package_data):
+        """Cria um novo pacote de assistente"""
+        try:
+            packages_collection = self.db['assistant_packages']
+            
+            # Converter a data de entrega para datetime
+            if package_data.get('delivery_date'):
+                package_data['delivery_date'] = datetime.strptime(package_data['delivery_date'], '%Y-%m-%d')
+            
+            # Inserir o pacote no banco de dados
+            result = packages_collection.insert_one(package_data)
+            
+            if result.inserted_id:
+                return {"success": True, "message": "Pacote criado com sucesso", "package_id": str(result.inserted_id)}
+            else:
+                return {"success": False, "message": "Erro ao criar pacote"}
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao criar pacote: {e}"}
+    
+    def delete_package(self, package_id, user_id):
+        """Deleta um pacote de assistente"""
+        try:
+            from bson import ObjectId
+            packages_collection = self.db['assistant_packages']
+            
+            # Verifica se o pacote pertence ao usuário
+            existing_package = packages_collection.find_one({"_id": ObjectId(package_id), "user_id": user_id})
+            if not existing_package:
+                return {"success": False, "message": "Pacote não encontrado ou não autorizado"}
+            
+            result = packages_collection.delete_one({"_id": ObjectId(package_id)})
+            
+            if result.deleted_count > 0:
+                return {"success": True, "message": "Pacote deletado com sucesso"}
+            else:
+                return {"success": False, "message": "Erro ao deletar pacote"}
+        except Exception as e:
+            return {"success": False, "message": f"Erro ao deletar pacote: {e}"}
+    
     def get_expense_by_id(self, expense_id):
         """Busca uma despesa específica pelo ID"""
         try:
