@@ -427,7 +427,7 @@
                                             {% for route in routes %}
                                             <tr>
                                                 <td>{{ loop.index }}</td>
-                                                <td>{{ route.route_date }}</td>
+                                                <td>{{ route.route_date.strftime('%d/%m/%Y') if route.route_date is not string else route.route_date }}</td>
                                                 <td>{{ route.route_name }}</td>
                                                 <td>
                                                     <span class="badge badge-{% if route.vehicle_type == 'passeio' %}primary{% else %}success{% endif %}">

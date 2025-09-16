@@ -175,17 +175,4 @@ def get_custom_data(self):
     return collection.find({})
 ```
 
-## 📞 Suporte
-
-Para dúvidas ou problemas:
-1. Verifique a seção de solução de problemas
-2. Consulte a documentação do Kivy: https://kivy.org/doc/stable/
-3. Documentação do MongoDB: https://docs.mongodb.com/
-
-## 📄 Licença
-
-Este projeto é baseado no template SB Admin 2 e está disponível para uso educacional e comercial.
-
----
-
 **Desenvolvido com ❤️ usando Python, Kivy e MongoDB**

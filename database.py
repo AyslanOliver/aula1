@@ -265,9 +265,14 @@ class DatabaseManager:
             routes_collection = self.db['routes']
             routes = list(routes_collection.find({"user_id": user_id}).sort("created_at", -1))
             
-            # Converte ObjectId para string
+            # Converte ObjectId para string e data para datetime
             for route in routes:
                 route['_id'] = str(route['_id'])
+                if isinstance(route.get('route_date'), str):
+                    try:
+                        route['route_date'] = datetime.strptime(route['route_date'], '%Y-%m-%d')
+                    except ValueError:
+                        pass
             
             return {"success": True, "routes": routes}
         
