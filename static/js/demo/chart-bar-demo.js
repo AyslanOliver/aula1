@@ -1,44 +1,32 @@
-// Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.font.family = 'Nunito, -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.color = '#858796';
+// Importar configurações padrão
+Chart.defaults.font.family = chartDefaults.font.family;
+Chart.defaults.color = chartDefaults.font.color;
 
-function number_format(number, decimals, dec_point, thousands_sep) {
-  // *     example: number_format(1234.56, 2, ',', ' ');
-  // *     return: '1 234,56'
-  number = (number + '').replace(',', '').replace(' ', '');
-  var n = !isFinite(+number) ? 0 : +number,
-    prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
-    sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
-    dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
-    s = '',
-    toFixedFix = function(n, prec) {
-      var k = Math.pow(10, prec);
-      return '' + Math.round(n * k) / k;
-    };
-  // Fix for IE parseFloat(0.55).toFixed(0) = 0;
-  s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-  if (s[0].length > 3) {
-    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
-  }
-  if ((s[1] || '').length < prec) {
-    s[1] = s[1] || '';
-    s[1] += new Array(prec - s[1].length + 1).join('0');
-  }
-  return s.join(dec);
-}
-
-// Bar Chart Example
+// Gráfico de Barras - Distribuição de Pacotes
 var ctx = document.getElementById("myBarChart");
 var myBarChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: ["January", "February", "March", "April", "May", "June"],
+    labels: ["Pacotes Avulsos", "Pacotes Agendados", "Pacotes Expressos"],
     datasets: [{
-      label: "Revenue",
-      backgroundColor: "#4e73df",
-      hoverBackgroundColor: "#2e59d9",
-      borderColor: "#4e73df",
-      data: [4215, 5312, 6251, 7841, 9821, 14984],
+      label: "Quantidade",
+      backgroundColor: [
+        chartDefaults.colors.primary,
+        chartDefaults.colors.success,
+        chartDefaults.colors.info
+      ],
+      hoverBackgroundColor: [
+        chartDefaults.colors.primary + "dd",
+        chartDefaults.colors.success + "dd",
+        chartDefaults.colors.info + "dd"
+      ],
+      borderColor: "rgba(0,0,0,0.1)",
+      borderWidth: 1,
+      data: [
+        packages_data.avulsos || 0,
+        packages_data.agendados || 0,
+        packages_data.expressos || 0
+      ],
     }],
   },
   options: {
@@ -53,9 +41,6 @@ var myBarChart = new Chart(ctx, {
     },
     scales: {
       x: {
-        time: {
-          unit: 'month'
-        },
         grid: {
           display: false,
           drawBorder: false
@@ -63,17 +48,15 @@ var myBarChart = new Chart(ctx, {
         ticks: {
           maxTicksLimit: 6
         },
-        maxBarThickness: 25,
+        maxBarThickness: 50,
       },
       y: {
         ticks: {
           min: 0,
-          max: 15000,
           maxTicksLimit: 5,
           padding: 10,
-          // Include a dollar sign in the ticks
-          callback: function(value, index, values) {
-            return '$' + number_format(value);
+          callback: function(value) {
+            return number_format(value, 0);
           }
         },
         grid: {
@@ -90,22 +73,11 @@ var myBarChart = new Chart(ctx, {
         display: false
       },
       tooltip: {
-        titleMarginBottom: 10,
-        titleColor: '#6e707e',
-        titleFont: {
-          size: 14
-        },
-        backgroundColor: "rgb(255,255,255)",
-        bodyColor: "#858796",
-        borderColor: '#dddfeb',
-        borderWidth: 1,
-        padding: 15,
-        displayColors: false,
-        caretPadding: 10,
+        ...chartDefaults.tooltipDefaults,
         callbacks: {
           label: function(context) {
             var datasetLabel = context.dataset.label || '';
-            return datasetLabel + ': $' + number_format(context.parsed.y);
+            return datasetLabel + ': ' + number_format(context.parsed.y, 0) + ' pacotes';
           }
         }
       }

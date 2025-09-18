@@ -131,58 +131,175 @@ def dashboard():
     # Calcular métricas específicas do negócio
     user_id = current_user.id
     
-    # Calcular ganhos por quinzena (últimos 15 dias)
-    from datetime import datetime, timedelta
-    quinze_dias_atras = datetime.now() - timedelta(days=15)
-    routes = db_manager.get_user_routes(user_id)
-    ganhos_quinzena = 0
-    pacotes_rota = 0
-    pacotes_avulso = 0
-    quantidade_pacotes_total = 0
+    # Buscar dados da quinzena atual
+    current_routes = db_manager.get_user_routes(user_id, "current")
+    current_expenses = db_manager.get_user_expenses(user_id, "current")
+    current_packages = db_manager.get_user_packages(user_id, "current")
     
-    if routes.get('success'):
-        for route in routes['routes']:
-            route_date = route.get('route_date')
-            if isinstance(route_date, str):
-                route_date = datetime.strptime(route_date, '%Y-%m-%d')
-            if route_date >= quinze_dias_atras:
-                ganhos_quinzena += route.get('total_value', 0)
-            
-            # Calcular todas as métricas em um único loop
-            pacotes_rota += route.get('total_packages', 0)
-            pacotes_avulso += route.get('loose_packages', 0)
-            quantidade_pacotes_total += route.get('total_packages', 0) + route.get('loose_packages', 0)
+    # Buscar dados da quinzena anterior
+    previous_routes = db_manager.get_user_routes(user_id, "previous")
+    previous_expenses = db_manager.get_user_expenses(user_id, "previous")
+    previous_packages = db_manager.get_user_packages(user_id, "previous")
     
-    # Calcular total de despesas
-    expenses = db_manager.get_user_expenses(user_id)
-    total_despesas = sum(expense.get('amount', 0) for expense in expenses)
+    # Calcular métricas da quinzena atual
+    ganhos_quinzena = current_routes.get('total_value', 0) if current_routes.get('success') else 0
+    total_despesas = current_expenses.get('total_expenses', 0) if current_expenses.get('success') else 0
+    
+    # Calcular pacotes da quinzena atual
+    pacotes_rota = sum(route.get('total_packages', 0) for route in current_routes.get('routes', []))
+    pacotes_avulso = sum(route.get('loose_packages', 0) for route in current_routes.get('routes', []))
+    quantidade_pacotes_total = pacotes_rota + pacotes_avulso
+    
+    # Calcular variação em relação à quinzena anterior
+    ganhos_anterior = previous_routes.get('total_value', 0) if previous_routes.get('success') else 0
+    despesas_anterior = previous_expenses.get('total_expenses', 0) if previous_expenses.get('success') else 0
+    
+    variacao_ganhos = ((ganhos_quinzena - ganhos_anterior) / ganhos_anterior * 100) if ganhos_anterior > 0 else 0
+    variacao_despesas = ((total_despesas - despesas_anterior) / despesas_anterior * 100) if despesas_anterior > 0 else 0
     
     # Formatar valores para exibição
     ganhos_quinzena_formatted = f"{ganhos_quinzena:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     total_despesas_formatted = f"{total_despesas:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    # Informações do período atual
+    period_info = current_routes.get('period', {}) if current_routes.get('success') else {}
     
     return render_template('index.html', 
                          ganhos_quinzena=ganhos_quinzena_formatted,
                          pacotes_rota=pacotes_rota,
                          pacotes_avulso=pacotes_avulso,
                          quantidade_pacotes_total=quantidade_pacotes_total,
-                         total_despesas=total_despesas_formatted)
+                         total_despesas=total_despesas_formatted,
+                         variacao_ganhos=variacao_ganhos,
+                         variacao_despesas=variacao_despesas,
+                         period_info=period_info)
 
 @app.route('/charts')
 @login_required
 def charts():
-    # Carregar dados dos gráficos
-    chart_data = db_manager.get_chart_data()
+    user_id = current_user.id
     
-    # Criar gráficos com Plotly
-    area_chart = create_area_chart(chart_data)
-    bar_chart = create_bar_chart(chart_data)
-    pie_chart = create_pie_chart(chart_data)
+    # Buscar dados da quinzena atual e anterior
+    current_routes = db_manager.get_user_routes(user_id, "current")
+    current_expenses = db_manager.get_user_expenses(user_id, "current")
+    current_packages = db_manager.get_user_packages(user_id, "current")
+    
+    previous_routes = db_manager.get_user_routes(user_id, "previous")
+    previous_expenses = db_manager.get_user_expenses(user_id, "previous")
+    previous_packages = db_manager.get_user_packages(user_id, "previous")
+    
+    # Criar gráfico de área para ganhos vs despesas
+    ganhos_data = {
+        'Quinzena Anterior': previous_routes.get('total_value', 0) if previous_routes.get('success') else 0,
+        'Quinzena Atual': current_routes.get('total_value', 0) if current_routes.get('success') else 0
+    }
+    
+    despesas_data = {
+        'Quinzena Anterior': previous_expenses.get('total_expenses', 0) if previous_expenses.get('success') else 0,
+        'Quinzena Atual': current_expenses.get('total_expenses', 0) if current_expenses.get('success') else 0
+    }
+    
+    area_chart = {
+        'data': [
+            go.Scatter(
+                x=list(ganhos_data.keys()),
+                y=list(ganhos_data.values()),
+                name='Ganhos',
+                fill='tonexty',
+                mode='lines+markers',
+                line=dict(color='#4e73df')
+            ),
+            go.Scatter(
+                x=list(despesas_data.keys()),
+                y=list(despesas_data.values()),
+                name='Despesas',
+                fill='tonexty',
+                mode='lines+markers',
+                line=dict(color='#e74a3b')
+            )
+        ],
+        'layout': go.Layout(
+            title='Ganhos vs Despesas por Quinzena',
+            xaxis=dict(title='Período'),
+            yaxis=dict(title='Valor (R$)'),
+            template='plotly_white'
+        )
+    }
+    
+    # Criar gráfico de barras para pacotes
+    pacotes_data = {
+        'Quinzena Anterior': {
+            'Rota': sum(route.get('total_packages', 0) for route in previous_routes.get('routes', [])),
+            'Avulso': sum(route.get('loose_packages', 0) for route in previous_routes.get('routes', []))
+        },
+        'Quinzena Atual': {
+            'Rota': sum(route.get('total_packages', 0) for route in current_routes.get('routes', [])),
+            'Avulso': sum(route.get('loose_packages', 0) for route in current_routes.get('routes', []))
+        }
+    }
+    
+    bar_chart = {
+        'data': [
+            go.Bar(
+                name='Pacotes em Rota',
+                x=list(pacotes_data.keys()),
+                y=[data['Rota'] for data in pacotes_data.values()],
+                marker_color='#1cc88a'
+            ),
+            go.Bar(
+                name='Pacotes Avulso',
+                x=list(pacotes_data.keys()),
+                y=[data['Avulso'] for data in pacotes_data.values()],
+                marker_color='#36b9cc'
+            )
+        ],
+        'layout': go.Layout(
+            title='Distribuição de Pacotes por Quinzena',
+            xaxis=dict(title='Período'),
+            yaxis=dict(title='Quantidade de Pacotes'),
+            barmode='group',
+            template='plotly_white'
+        )
+    }
+    
+    # Criar gráfico de pizza para distribuição de despesas
+    current_expenses_by_category = {}
+    if current_expenses.get('success'):
+        for expense in current_expenses.get('expenses', []):
+            category = expense.get('category', 'Outros')
+            amount = expense.get('amount', 0)
+            current_expenses_by_category[category] = current_expenses_by_category.get(category, 0) + amount
+    
+    pie_chart = {
+        'data': [
+            go.Pie(
+                labels=list(current_expenses_by_category.keys()),
+                values=list(current_expenses_by_category.values()),
+                hole=.4,
+                marker=dict(colors=['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'])
+            )
+        ],
+        'layout': go.Layout(
+            title='Distribuição de Despesas por Categoria (Quinzena Atual)',
+            template='plotly_white'
+        )
+    }
+    
+    # Converter os gráficos para JSON
+    graphJSON = {
+        'area_chart': json.dumps(area_chart, cls=plotly.utils.PlotlyJSONEncoder),
+        'bar_chart': json.dumps(bar_chart, cls=plotly.utils.PlotlyJSONEncoder),
+        'pie_chart': json.dumps(pie_chart, cls=plotly.utils.PlotlyJSONEncoder)
+    }
+    
+    # Informações do período atual
+    period_info = current_routes.get('period', {}) if current_routes.get('success') else {}
     
     return render_template('charts.html', 
-                         area_chart=area_chart, 
-                         bar_chart=bar_chart, 
-                         pie_chart=pie_chart)
+                         area_chart=graphJSON['area_chart'],
+                         bar_chart=graphJSON['bar_chart'],
+                         pie_chart=graphJSON['pie_chart'],
+                         period_info=period_info)
 
 @app.route('/tables')
 @login_required
@@ -798,10 +915,4 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') != 'production'
-    app.run(
-        debug=debug, 
-        host='0.0.0.0', 
-        port=port
-    )
+    app.run(host='127.0.0.1', port=5000, debug=True)

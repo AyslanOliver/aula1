@@ -407,7 +407,10 @@
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        
+                        <div class="d-flex align-items-center">
+                            <span class="mr-2">Período: {{ period_info.start_date }} a {{ period_info.end_date }}</span>
+                            <span class="badge badge-info">{{ "1ª Quinzena" if period_info.fortnight == 1 else "2ª Quinzena" }}</span>
+                        </div>
                     </div>
 
                     <!-- Content Row -->
@@ -420,8 +423,24 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Ganhos por Quinzena</div>
+                                                Ganhos da Quinzena</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">R$ {{ ganhos_quinzena or '0,00' }}</div>
+                                            <div class="text-xs mt-2">
+                                                {% if variacao_ganhos > 0 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-arrow-up"></i> +{{ "%.1f"|format(variacao_ganhos) }}%
+                                                </span>
+                                                {% elif variacao_ganhos < 0 %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-arrow-down"></i> {{ "%.1f"|format(variacao_ganhos) }}%
+                                                </span>
+                                                {% else %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-equals"></i> 0%
+                                                </span>
+                                                {% endif %}
+                                                <span class="ml-1">vs quinzena anterior</span>
+                                            </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
@@ -438,7 +457,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Quantidade Pacotes Entregues</div>
+                                                Pacotes Entregues na Quinzena</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pacotes_rota or '0' }}</div>
                                         </div>
                                         <div class="col-auto">
@@ -456,7 +475,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Pacotes Avulso</div>
+                                                Pacotes Avulso na Quinzena</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pacotes_avulso or '0' }}</div>
                                         </div>
                                         <div class="col-auto">
@@ -474,7 +493,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Quantidade de Pacotes Total</div>
+                                                Total de Pacotes na Quinzena</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ quantidade_pacotes_total or '0' }}</div>
                                         </div>
                                         <div class="col-auto">
@@ -487,13 +506,29 @@
 
                         <!-- Total de Despesas Card -->
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card border-left-danger shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Total de Despesas</div>
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                Despesas da Quinzena</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">R$ {{ total_despesas or '0,00' }}</div>
+                                            <div class="text-xs mt-2">
+                                                {% if variacao_despesas > 0 %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-arrow-up"></i> +{{ "%.1f"|format(variacao_despesas) }}%
+                                                </span>
+                                                {% elif variacao_despesas < 0 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-arrow-down"></i> {{ "%.1f"|format(variacao_despesas) }}%
+                                                </span>
+                                                {% else %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-equals"></i> 0%
+                                                </span>
+                                                {% endif %}
+                                                <span class="ml-1">vs quinzena anterior</span>
+                                            </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>

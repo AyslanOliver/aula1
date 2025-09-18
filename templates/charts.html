@@ -382,11 +382,15 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Charts</h1>
-                    <p class="mb-4">Chart.js is a third party plugin that is used to generate the charts in this theme.
-                        The charts below have been customized - for further customization options, please visit the <a
-                            target="_blank" href="https://www.chartjs.org/docs/latest/">official Chart.js
-                            documentation</a>.</p>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <h1 class="h3 mb-2 text-gray-800">Relatórios e Analytics</h1>
+                            <div class="text-xs font-weight-bold text-primary mb-1">
+                                Período: {{ period_info.start_date.strftime('%d/%m/%Y') }} - {{ period_info.end_date.strftime('%d/%m/%Y') }}
+                                <span class="badge badge-info ml-2">{{ '1ª Quinzena' if period_info.fortnight == 1 else '2ª Quinzena' }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Content Row -->
                     <div class="row">
@@ -395,31 +399,45 @@
 
                             <!-- Area Chart -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Area Chart</h6>
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Ganhos vs Despesas na Quinzena</h6>
+                                    {% if routes_data.variation != 0 %}
+                                    <div class="text-xs font-weight-bold {{ 'text-success' if routes_data.variation > 0 else 'text-danger' }}">
+                                        <i class="fas {{ 'fa-arrow-up' if routes_data.variation > 0 else 'fa-arrow-down' }} mr-1"></i>
+                                        {{ "%.1f"|format(routes_data.variation|abs) }}% vs quinzena anterior
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="card-body">
                                     <div class="chart-area">
                                         <canvas id="myAreaChart"></canvas>
                                     </div>
                                     <hr>
-                                    Styling for the area chart can be found in the
-                                    <code>/js/demo/chart-area-demo.js</code> file.
+                                    <div class="text-xs text-muted">
+                                        Comparativo entre ganhos e despesas ao longo da quinzena atual
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Bar Chart -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Bar Chart</h6>
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Distribuição de Pacotes</h6>
+                                    {% if packages_data.variation != 0 %}
+                                    <div class="text-xs font-weight-bold {{ 'text-success' if packages_data.variation > 0 else 'text-danger' }}">
+                                        <i class="fas {{ 'fa-arrow-up' if packages_data.variation > 0 else 'fa-arrow-down' }} mr-1"></i>
+                                        {{ "%.1f"|format(packages_data.variation|abs) }}% vs quinzena anterior
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="card-body">
                                     <div class="chart-bar">
                                         <canvas id="myBarChart"></canvas>
                                     </div>
                                     <hr>
-                                    Styling for the bar chart can be found in the
-                                    <code>/js/demo/chart-bar-demo.js</code> file.
+                                    <div class="text-xs text-muted">
+                                        Distribuição de pacotes por tipo e quantidade na quinzena atual
+                                    </div>
                                 </div>
                             </div>
 
@@ -429,8 +447,14 @@
                         <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Donut Chart</h6>
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Despesas por Categoria</h6>
+                                    {% if expenses_data.variation != 0 %}
+                                    <div class="text-xs font-weight-bold {{ 'text-success' if expenses_data.variation < 0 else 'text-danger' }}">
+                                        <i class="fas {{ 'fa-arrow-down' if expenses_data.variation < 0 else 'fa-arrow-up' }} mr-1"></i>
+                                        {{ "%.1f"|format(expenses_data.variation|abs) }}% vs quinzena anterior
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
@@ -438,8 +462,9 @@
                                         <canvas id="myPieChart"></canvas>
                                     </div>
                                     <hr>
-                                    Styling for the donut chart can be found in the
-                                    <code>/js/demo/chart-pie-demo.js</code> file.
+                                    <div class="text-xs text-muted">
+                                        Distribuição percentual das despesas por categoria na quinzena atual
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -505,10 +530,40 @@
     <!-- Page level plugins -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
+    <!-- Dados dos gráficos -->
+    <script>
+        // Dados de ganhos
+        const ganhos_data = {
+            anterior: {{ routes_data.previous_value if routes_data.previous_value else 0 }},
+            atual: {{ routes_data.total_value if routes_data.total_value else 0 }}
+        };
+
+        // Dados de despesas
+        const despesas_data = {
+            anterior: {{ expenses_data.previous_total if expenses_data.previous_total else 0 }},
+            atual: {{ expenses_data.total_expenses if expenses_data.total_expenses else 0 }}
+        };
+
+        // Dados de pacotes
+        const packages_data = {
+            avulsos: {{ packages_data.avulsos if packages_data.avulsos else 0 }},
+            agendados: {{ packages_data.agendados if packages_data.agendados else 0 }},
+            expressos: {{ packages_data.expressos if packages_data.expressos else 0 }}
+        };
+
+        // Dados de despesas por categoria
+        const expenses_data = {
+            categories: {{ expenses_data.categories|tojson|safe if expenses_data.categories else '["Sem dados"]'|safe }},
+            values: {{ expenses_data.category_values|tojson|safe if expenses_data.category_values else '[1]'|safe }}
+        };
+
+    </script>
+
     <!-- Page level custom scripts -->
+    <script src="{{ url_for('static', filename='js/demo/chart-utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ url_for('static', filename='js/demo/chart-bar-demo.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/demo/chart-pie-demo.js') }}"></script>
 
 </body>
 

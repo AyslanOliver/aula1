@@ -1,12 +1,53 @@
 import pymongo
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, date
+import calendar
 import hashlib
+
+def get_current_fortnight():
+    """Retorna as datas de início e fim da quinzena atual"""
+    hoje = date.today()
+    primeiro_dia = date(hoje.year, hoje.month, 1)
+    ultimo_dia = date(hoje.year, hoje.month, calendar.monthrange(hoje.year, hoje.month)[1])
+    
+    # Primeira quinzena: 1-15
+    if hoje.day <= 15:
+        inicio = primeiro_dia
+        fim = date(hoje.year, hoje.month, 15)
+    # Segunda quinzena: 16-último dia do mês
+    else:
+        inicio = date(hoje.year, hoje.month, 16)
+        fim = ultimo_dia
+    
+    return inicio, fim
+
+def get_previous_fortnight():
+    """Retorna as datas de início e fim da quinzena anterior"""
+    hoje = date.today()
+    
+    # Se estamos na segunda quinzena (16-31)
+    if hoje.day > 15:
+        inicio = date(hoje.year, hoje.month, 1)
+        fim = date(hoje.year, hoje.month, 15)
+    # Se estamos na primeira quinzena (1-15)
+    else:
+        # Se for janeiro, volta para dezembro do ano anterior
+        if hoje.month == 1:
+            ano = hoje.year - 1
+            mes = 12
+        else:
+            ano = hoje.year
+            mes = hoje.month - 1
+        
+        inicio = date(ano, mes, 16)
+        fim = date(ano, mes, calendar.monthrange(ano, mes)[1])
+    
+    return inicio, fim
 
 class DatabaseManager:
     def __init__(self):
         # String de conexão MongoDB fornecida pelo usuário
-        self.connection_string = "mongodb+srv://ayslano37:Walkingtonn1@demolicao.fk6aapp.mongodb.net/"
+        self.connection_string = "mongodb+srv://ayslano37:Walkingtonn1@demolicao.fk6aapp.mongodb.net/?retryWrites=true&w=majority&serverSelectionTimeoutMS=5000"
         self.client = None
         self.db = None
         self.connect()
@@ -14,11 +55,25 @@ class DatabaseManager:
     def connect(self):
         """Estabelece conexão com MongoDB"""
         try:
-            self.client = MongoClient(self.connection_string)
+            # Configuração do cliente com timeout e retry
+            self.client = MongoClient(
+                self.connection_string,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=5000,
+                socketTimeoutMS=5000,
+                maxPoolSize=50,
+                retryWrites=True
+            )
             self.db = self.client['sb_admin_db']  # Nome do banco de dados
             # Testa a conexão
             self.client.admin.command('ping')
             print("Conexão com MongoDB estabelecida com sucesso!")
+        except pymongo.errors.ServerSelectionTimeoutError as e:
+            print(f"Erro de timeout ao conectar com MongoDB: {e}")
+            print("Verifique sua conexão com a internet e as configurações de firewall")
+        except pymongo.errors.ConnectionFailure as e:
+            print(f"Falha na conexão com MongoDB: {e}")
+            print("Verifique se o servidor MongoDB está acessível")
         except Exception as e:
             print(f"Erro ao conectar com MongoDB: {e}")
     
@@ -259,11 +314,32 @@ class DatabaseManager:
         except Exception as e:
             return {"success": False, "message": f"Erro ao criar rota: {e}"}
     
-    def get_user_routes(self, user_id):
-        """Busca todas as rotas de um usuário"""
+    def get_user_routes(self, user_id, period="current"):
+        """
+        Busca as rotas de um usuário por período
+        period: "current" para quinzena atual, "previous" para quinzena anterior
+        """
         try:
             routes_collection = self.db['routes']
-            routes = list(routes_collection.find({"user_id": user_id}).sort("created_at", -1))
+            
+            # Obtém as datas de início e fim do período
+            if period == "current":
+                inicio, fim = get_current_fortnight()
+            else:
+                inicio, fim = get_previous_fortnight()
+            
+            # Converte para datetime para incluir horário
+            inicio_dt = datetime.combine(inicio, datetime.min.time())
+            fim_dt = datetime.combine(fim, datetime.max.time())
+            
+            # Busca rotas do período
+            routes = list(routes_collection.find({
+                "user_id": user_id,
+                "route_date": {
+                    "$gte": inicio_dt,
+                    "$lte": fim_dt
+                }
+            }).sort("route_date", -1))
             
             # Converte ObjectId para string e data para datetime
             for route in routes:
@@ -274,7 +350,22 @@ class DatabaseManager:
                     except ValueError:
                         pass
             
-            return {"success": True, "routes": routes}
+            # Adiciona informações do período
+            period_info = {
+                "inicio": inicio.strftime('%d/%m/%Y'),
+                "fim": fim.strftime('%d/%m/%Y'),
+                "quinzena": "1ª Quinzena" if inicio.day == 1 else "2ª Quinzena",
+                "mes": inicio.strftime('%B'),
+                "ano": inicio.year
+            }
+            
+            return {
+                "success": True,
+                "routes": routes,
+                "period": period_info,
+                "total_routes": len(routes),
+                "total_value": sum(route.get('total_value', 0) for route in routes)
+            }
         
         except Exception as e:
             return {"success": False, "message": f"Erro ao buscar rotas: {e}"}
@@ -381,11 +472,32 @@ class DatabaseManager:
         except Exception as e:
             return {"success": False, "message": f"Erro ao criar despesa: {e}"}
     
-    def get_user_expenses(self, user_id):
-        """Busca todas as despesas de um usuário"""
+    def get_user_expenses(self, user_id, period="current"):
+        """
+        Busca as despesas de um usuário por período
+        period: "current" para quinzena atual, "previous" para quinzena anterior
+        """
         try:
             expenses_collection = self.db['expenses']
-            expenses = list(expenses_collection.find({"user_id": user_id}).sort("expense_date", -1))
+            
+            # Obtém as datas de início e fim do período
+            if period == "current":
+                inicio, fim = get_current_fortnight()
+            else:
+                inicio, fim = get_previous_fortnight()
+            
+            # Converte para datetime para incluir horário
+            inicio_dt = datetime.combine(inicio, datetime.min.time())
+            fim_dt = datetime.combine(fim, datetime.max.time())
+            
+            # Busca despesas do período
+            expenses = list(expenses_collection.find({
+                "user_id": user_id,
+                "expense_date": {
+                    "$gte": inicio_dt,
+                    "$lte": fim_dt
+                }
+            }).sort("expense_date", -1))
             
             # Converte ObjectId para string e corrige datas em formato string
             for expense in expenses:
@@ -399,17 +511,71 @@ class DatabaseManager:
                         # Se não conseguir converter, mantém como string
                         pass
             
-            return expenses
+            # Adiciona informações do período
+            period_info = {
+                "inicio": inicio.strftime('%d/%m/%Y'),
+                "fim": fim.strftime('%d/%m/%Y'),
+                "quinzena": "1ª Quinzena" if inicio.day == 1 else "2ª Quinzena",
+                "mes": inicio.strftime('%B'),
+                "ano": inicio.year
+            }
+            
+            # Calcula totais por categoria
+            categories = {}
+            total_amount = 0
+            for expense in expenses:
+                category = expense.get('category', 'Outros')
+                amount = expense.get('amount', 0)
+                categories[category] = categories.get(category, 0) + amount
+                total_amount += amount
+            
+            return {
+                "success": True,
+                "expenses": expenses,
+                "period": period_info,
+                "total_expenses": total_amount,
+                "categories": categories,
+                "total_count": len(expenses)
+            }
+            
         except Exception as e:
             print(f"Erro ao buscar despesas: {e}")
-            return []
+            return {
+                "success": False,
+                "message": f"Erro ao buscar despesas: {e}",
+                "expenses": [],
+                "total_expenses": 0,
+                "categories": {},
+                "total_count": 0
+            }
     
     # Métodos para gerenciamento de pacotes dos assistentes
-    def get_user_packages(self, user_id):
-        """Busca todos os pacotes de um usuário"""
+    def get_user_packages(self, user_id, period="current"):
+        """
+        Busca os pacotes de um usuário por período
+        period: "current" para quinzena atual, "previous" para quinzena anterior
+        """
         try:
             packages_collection = self.db['assistant_packages']
-            packages = list(packages_collection.find({"user_id": user_id}).sort("delivery_date", -1))
+            
+            # Obtém as datas de início e fim do período
+            if period == "current":
+                inicio, fim = get_current_fortnight()
+            else:
+                inicio, fim = get_previous_fortnight()
+            
+            # Converte para datetime para incluir horário
+            inicio_dt = datetime.combine(inicio, datetime.min.time())
+            fim_dt = datetime.combine(fim, datetime.max.time())
+            
+            # Busca pacotes do período
+            packages = list(packages_collection.find({
+                "user_id": user_id,
+                "delivery_date": {
+                    "$gte": inicio_dt,
+                    "$lte": fim_dt
+                }
+            }).sort("delivery_date", -1))
             
             # Converte ObjectId para string e ajusta datas
             for package in packages:
@@ -420,9 +586,42 @@ class DatabaseManager:
                     except ValueError:
                         pass
             
-            return {"success": True, "packages": packages}
+            # Adiciona informações do período
+            period_info = {
+                "inicio": inicio.strftime('%d/%m/%Y'),
+                "fim": fim.strftime('%d/%m/%Y'),
+                "quinzena": "1ª Quinzena" if inicio.day == 1 else "2ª Quinzena",
+                "mes": inicio.strftime('%B'),
+                "ano": inicio.year
+            }
+            
+            # Calcula estatísticas
+            total_packages = sum(package.get('packages_delivered', 0) for package in packages)
+            total_value = sum(package.get('total_value', 0) for package in packages)
+            total_stops = sum(package.get('total_stops', 0) for package in packages)
+            unique_assistants = len(set(package.get('assistant_name') for package in packages))
+            
+            return {
+                "success": True,
+                "packages": packages,
+                "period": period_info,
+                "total_packages": total_packages,
+                "total_value": total_value,
+                "total_stops": total_stops,
+                "unique_assistants": unique_assistants,
+                "avg_per_package": total_value / total_packages if total_packages > 0 else 0
+            }
         except Exception as e:
-            return {"success": False, "message": f"Erro ao buscar pacotes: {e}"}
+            return {
+                "success": False,
+                "message": f"Erro ao buscar pacotes: {e}",
+                "packages": [],
+                "total_packages": 0,
+                "total_value": 0,
+                "total_stops": 0,
+                "unique_assistants": 0,
+                "avg_per_package": 0
+            }
     
     def create_package(self, package_data):
         """Cria um novo pacote de assistente"""

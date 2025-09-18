@@ -1,17 +1,31 @@
-// Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.font.family = 'Nunito, -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.color = '#858796';
+// Importar configurações padrão
+Chart.defaults.font.family = chartDefaults.font.family;
+Chart.defaults.color = chartDefaults.font.color;
 
-// Pie Chart Example
+// Gráfico de Pizza - Despesas por Categoria
 var ctx = document.getElementById("myPieChart");
 var myPieChart = new Chart(ctx, {
   type: 'doughnut',
   data: {
-    labels: ["Direct", "Referral", "Social"],
+    labels: expenses_data.categories || ["Sem dados"],
     datasets: [{
-      data: [55, 30, 15],
-      backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
-      hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+      data: expenses_data.values || [1],
+      backgroundColor: [
+        chartDefaults.colors.primary,
+        chartDefaults.colors.success,
+        chartDefaults.colors.info,
+        chartDefaults.colors.warning,
+        chartDefaults.colors.danger,
+        chartDefaults.colors.secondary
+      ],
+      hoverBackgroundColor: [
+        chartDefaults.colors.primary + "dd",
+        chartDefaults.colors.success + "dd",
+        chartDefaults.colors.info + "dd",
+        chartDefaults.colors.warning + "dd",
+        chartDefaults.colors.danger + "dd",
+        chartDefaults.colors.secondary + "dd"
+      ],
       hoverBorderColor: "rgba(234, 236, 244, 1)",
     }],
   },
@@ -19,16 +33,24 @@ var myPieChart = new Chart(ctx, {
     maintainAspectRatio: false,
     plugins: {
       tooltip: {
-        backgroundColor: "rgb(255,255,255)",
-        bodyColor: "#858796",
-        borderColor: '#dddfeb',
-        borderWidth: 1,
-        padding: 15,
-        displayColors: false,
-        caretPadding: 10,
+        ...chartDefaults.tooltipDefaults,
+        callbacks: {
+          label: function(context) {
+            var label = context.label || '';
+            var value = context.parsed || 0;
+            var total = context.dataset.data.reduce((a, b) => a + b, 0);
+            var percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+            return label + ': R$ ' + number_format(value) + ' (' + percentage + '%)';
+          }
+        }
       },
       legend: {
-        display: false
+        display: true,
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          boxWidth: 12
+        }
       }
     },
     cutout: '80%',
